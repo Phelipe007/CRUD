@@ -8,4 +8,3 @@ def db_connection():
         database="bdyoutube"
     )
     return conexao
-
