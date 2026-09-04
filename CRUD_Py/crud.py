@@ -11,24 +11,32 @@ def create(nome, valor):
 
     cursor.execute(comando)
     conexao.commit()
-
-    cursor.close()
-    conexao.close()
     
     if cursor.rowcount > 0:
         cursor_status = True
     else:
         cursor_status = False
+
+    cursor.close()
+    conexao.close()
     return cursor_status
 
-def read(id=None, nome=None, valor=None):
+def read(id=None, nome=None, valor=None, valor_min=None, valor_max=None):
     cursor = conexao.cursor()
 
-    id = int(id)
-    nome = str(nome)
-    valor = str(valor)
+    comando = f'SELECT idvendas, nome_produto, valor FROM vendas'
 
-    comando = f'SELECT {id, nome, valor} FROM vendas'
+    if id is not None:
+        comando += f' WHERE idvendas = {id} ORDER BY idvendas ASC'
+
+    elif nome is not None:
+        comando += f" WHERE nome_produto LIKE '%{nome}%' ORDER BY idvendas ASC"
+
+    elif valor is not None:
+        comando += f' WHERE  valor = {valor} ORDER BY idvendas ASC'
+
+    elif valor_min and valor_max is not None:
+        comando += f' WHERE  valor >= {valor_min} AND valor <= {valor_max} ORDER BY idvendas ASC'
 
     cursor.execute(comando)
     resultado = cursor.fetchall()#ler, pegar todos os resultados da consulta
@@ -50,7 +58,6 @@ def update(nome=None, valor=None):
         comando = f"UPDATE vendas SET valor = {valor}"
     elif nome and valor != None:
         comando = f"UPDATE vendas SET nome_produto = {nome}, valor = {valor}"
-
     cursor.execute(comando)
     conexao.commit()
     
@@ -63,7 +70,7 @@ def update(nome=None, valor=None):
         cursor_status = False
     return cursor_status
     
- def delete(id=None, nome=None, valor=None):
+def delete(id, nome, valor):
     cursor = conexao.cursor()
     id = int(id)
     nome = str(nome)
