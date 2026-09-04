@@ -1,7 +1,5 @@
 from crud import read
 
-
-
 def mostrar_resultados(resultado):
 
     print("\n" * 3 + "=" * 50)

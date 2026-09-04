@@ -23,22 +23,30 @@ def create(nome, valor):
 
 def read(id=None, nome=None, valor=None, valor_min=None, valor_max=None):
     cursor = conexao.cursor()
+    parametros = []
 
-    comando = f'SELECT idvendas, nome_produto, valor FROM vendas'
+    comando = 'SELECT idvendas, nome_produto, valor FROM vendas WHERE '
 
     if id is not None:
-        comando += f' WHERE idvendas = {id} ORDER BY idvendas ASC'
+        comando += f'idvendas = %s'
+        parametros.append(f"{id}")
 
     elif nome is not None:
-        comando += f" WHERE nome_produto LIKE '%{nome}%' ORDER BY idvendas ASC"
+        comando += f'nome_produto LIKE %s'
+        parametros.append(f"%{nome}%")
 
     elif valor is not None:
-        comando += f' WHERE  valor = {valor} ORDER BY idvendas ASC'
+        comando += f'valor = %s'
+        parametros.append(f"{valor}")
 
     elif valor_min and valor_max is not None:
-        comando += f' WHERE  valor >= {valor_min} AND valor <= {valor_max} ORDER BY idvendas ASC'
+        comando += f'valor BETWEEN $s AND %s'
+        parametros.append(f"{valor_min}")
+        parametros.append(f"{valor_max}")
 
-    cursor.execute(comando)
+    comando += " ORDER BY idvendas ASC"
+
+    cursor.execute(comando (parametros, ))
     resultado = cursor.fetchall()#ler, pegar todos os resultados da consulta
 
     conexao.commit()
@@ -52,23 +60,25 @@ def update(nome=None, valor=None):
     nome = str(nome)
     valor = int(valor)
 
-    if valor == None and nome != None:
-        comando = f"UPDATE vendas SET nome_produto = {nome}"
-    elif nome == None and nome != None:
-        comando = f"UPDATE vendas SET valor = {valor}"
-    elif nome and valor != None:
-        comando = f"UPDATE vendas SET nome_produto = {nome}, valor = {valor}"
-    cursor.execute(comando)
-    conexao.commit()
-    
-    conexao.close()
-    cursor.close()
+    omando = f"UPDATE vendas SET"
+
+    if nome is not None:
+        comando += f" nome_produto = {nome}"
+    elif valor is not None:
+        comando += f" valor = {valor}"
 
     if cursor.rowcount > 0:
         cursor_status = True
     else:
         cursor_status = False
     return cursor_status
+
+    cursor.execute(comando)
+    conexao.commit()
+    
+    conexao.close()
+    cursor.close()
+
     
 def delete(id, nome, valor):
     cursor = conexao.cursor()
@@ -83,4 +93,3 @@ def delete(id, nome, valor):
 
     cursor.close()
     conexao.close()
-    return cursor_status
