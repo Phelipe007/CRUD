@@ -6,10 +6,11 @@ def create(nome, valor):
 
     nome = str(nome)
     valor = int(valor)
+    parametros = [nome, valor]
 
-    comando = f'INSERT INTO vendas (nome_produto, valor) VALUES ("{nome}", {valor})'
+    comando = 'INSERT INTO vendas (nome_produto, valor) VALUES ($s, $s)'
 
-    cursor.execute(comando)
+    cursor.execute(comando, (parametros,))
     conexao.commit()
     
     if cursor.rowcount > 0:
@@ -18,7 +19,6 @@ def create(nome, valor):
         cursor_status = False
 
     cursor.close()
-    conexao.close()
     return cursor_status
 
 def read(id=None, nome=None, valor=None, valor_min=None, valor_max=None):
@@ -29,66 +29,66 @@ def read(id=None, nome=None, valor=None, valor_min=None, valor_max=None):
 
     if id is not None:
         comando += 'idvendas = %s'
-        parametros.append(f"{id}")
+        parametros.append(id)
 
     elif nome is not None:
         comando += 'nome_produto LIKE %s'
-        parametros.append(f"%{nome}%")
+        parametros.append(nome)
 
     elif valor is not None:
         comando += 'valor = %s'
-        parametros.append(f"{valor}")
+        parametros.append(valor)
 
     elif valor_min and valor_max is not None:
         comando += 'valor BETWEEN %s AND %s'
-        parametros.append(f"{valor_min}")
-        parametros.append(f"{valor_max}")
+        parametros.append(valor_min)
+        parametros.append(valor_max)
 
     comando += " ORDER BY idvendas ASC"
 
-    cursor.execute(comando, parametros)
+    cursor.execute(comando, (parametros,))
     resultado = cursor.fetchall()#ler, pegar todos os resultados da consulta
 
 
     cursor.close()
-    conexao.close()
+    
     return resultado
 
 def update(nome=None, valor=None):
     cursor = conexao.cursor()
     nome = str(nome)
     valor = int(valor)
+    parametros = []
 
-    omando = f"UPDATE vendas SET"
+    omando = "UPDATE vendas SET"
 
     if nome is not None:
-        comando += f" nome_produto = {nome}"
-    elif valor is not None:
-        comando += f" valor = {valor}"
+        comando += " nome_produto = $s"
+        parametros.append(nome)
+    if valor is not None:
+        comando += " valor = $s"
+        parametros.append(valor)
 
     if cursor.rowcount > 0:
         cursor_status = True
     else:
         cursor_status = False
+    
+    cursor.execute(comando, (parametros,))
+    conexao.commit()
+    
+    cursor.close()
     return cursor_status
 
-    cursor.execute(comando)
-    conexao.commit()
     
-    conexao.close()
-    cursor.close()
-
-    
-def delete(id, nome, valor):
+def delete(id):
     cursor = conexao.cursor()
     id = int(id)
-    nome = str(nome)
-    valor = int(valor)
 
-    comando = f"DELETE VALUES {id} FROM vendas TABLE = idvendas"
+    comando = f"DELETE FROM vendas WHERE = $s"
     
-    cursor.execute(comando)
+    cursor.execute(comando, (id,))
     conexao.commit()
 
     cursor.close()
-    conexao.close()
+    
