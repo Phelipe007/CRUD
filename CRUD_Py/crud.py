@@ -10,7 +10,7 @@ def create(nome, valor):
 
     comando = 'INSERT INTO vendas (nome_produto, valor) VALUES ($s, $s)'
 
-    cursor.execute(comando, (parametros,))
+    cursor.execute(comando, parametros)
     conexao.commit()
     
     if cursor.rowcount > 0:
@@ -31,22 +31,22 @@ def read(id=None, nome=None, valor=None, valor_min=None, valor_max=None):
         comando += 'idvendas = %s'
         parametros.append(id)
 
-    elif nome is not None:
+    if nome is not None:
         comando += 'nome_produto LIKE %s'
         parametros.append(nome)
 
-    elif valor is not None:
+    if valor is not None:
         comando += 'valor = %s'
         parametros.append(valor)
 
-    elif valor_min and valor_max is not None:
+    if valor_min is not None and valor_max is not None:
         comando += 'valor BETWEEN %s AND %s'
         parametros.append(valor_min)
         parametros.append(valor_max)
 
     comando += " ORDER BY idvendas ASC"
 
-    cursor.execute(comando, (parametros,))
+    cursor.execute(comando, parametros)
     resultado = cursor.fetchall()#ler, pegar todos os resultados da consulta
 
 
@@ -60,22 +60,23 @@ def update(nome=None, valor=None):
     valor = int(valor)
     parametros = []
 
-    omando = "UPDATE vendas SET"
+    comando = "UPDATE vendas SET"
 
     if nome is not None:
-        comando += " nome_produto = $s"
+        comando += " nome_produto = %s"
         parametros.append(nome)
     if valor is not None:
-        comando += " valor = $s"
+        comando += " valor = %s"
         parametros.append(valor)
 
+    
+    cursor.execute(comando, parametros)
+    conexao.commit()
+    
     if cursor.rowcount > 0:
         cursor_status = True
     else:
         cursor_status = False
-    
-    cursor.execute(comando, (parametros,))
-    conexao.commit()
     
     cursor.close()
     return cursor_status
@@ -89,6 +90,12 @@ def delete(id):
     
     cursor.execute(comando, (id,))
     conexao.commit()
+    
+    if cursor.rowcount > 0:
+        cursor_status = True
+    else:
+        cursor_status = False
 
     cursor.close()
+    return cursor_status
     
