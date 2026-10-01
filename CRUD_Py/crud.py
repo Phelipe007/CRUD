@@ -28,28 +28,27 @@ def read(id=None, nome=None, valor=None, valor_min=None, valor_max=None):
     comando = 'SELECT idvendas, nome_produto, valor FROM vendas WHERE '
 
     if id is not None:
-        comando += f'idvendas = %s'
+        comando += 'idvendas = %s'
         parametros.append(f"{id}")
 
     elif nome is not None:
-        comando += f'nome_produto LIKE %s'
+        comando += 'nome_produto LIKE %s'
         parametros.append(f"%{nome}%")
 
     elif valor is not None:
-        comando += f'valor = %s'
+        comando += 'valor = %s'
         parametros.append(f"{valor}")
 
     elif valor_min and valor_max is not None:
-        comando += f'valor BETWEEN $s AND %s'
+        comando += 'valor BETWEEN %s AND %s'
         parametros.append(f"{valor_min}")
         parametros.append(f"{valor_max}")
 
     comando += " ORDER BY idvendas ASC"
 
-    cursor.execute(comando (parametros, ))
+    cursor.execute(comando, parametros)
     resultado = cursor.fetchall()#ler, pegar todos os resultados da consulta
 
-    conexao.commit()
 
     cursor.close()
     conexao.close()
